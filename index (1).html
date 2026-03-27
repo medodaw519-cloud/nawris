@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>النورس — متابعة الطرود أونلاين</title>
+<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#08090f;--bg2:#0e1018;--bg3:#141620;--bg4:#1b1e2c;--bg5:#232740;
+  --rim:#252a3d;--rim2:#2e3550;--dim:#4a5270;--mute:#6b7498;--pale:#9daad0;--white:#e8eeff;
+  --gold:#f5c842;--gd:rgba(245,200,66,.15);--gb:rgba(245,200,66,.3);
+  --red:#ff3a5c;--rd:rgba(255,58,92,.14);--rb:rgba(255,58,92,.3);
+  --grn:#22d896;--grd:rgba(34,216,150,.13);--grb:rgba(34,216,150,.28);
+  --blu:#4f8aff;--bld:rgba(79,138,255,.14);--blb:rgba(79,138,255,.3);
+  --orn:#ff7c2a;--ord:rgba(255,124,42,.13);
+  --pur:#9b6dff;--prd:rgba(155,109,255,.13);
+  --wa:#25d366;--wad:rgba(37,211,102,.15);
+  --font:'Tajawal',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --r:12px;--r2:8px;--r3:6px;--sh:0 8px 32px rgba(0,0,0,.5);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--white);min-height:100vh;font-size:14px;overflow-x:hidden}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;background-image:radial-gradient(ellipse 80% 55% at 50% 0%,rgba(245,200,66,.08),transparent)}
+.lbox{background:var(--bg3);border:1px solid var(--rim2);border-radius:18px;padding:44px 38px;width:400px;max-width:95vw;box-shadow:0 0 60px rgba(245,200,66,.08),var(--sh);text-align:center}
+.llogo{font-size:48px;margin-bottom:8px}
+.lbrand{font-size:22px;font-weight:900;color:var(--gold);margin-bottom:4px}
+.lsub{font-size:12px;color:var(--mute);margin-bottom:32px}
+.lbox label{display:block;text-align:right;font-size:11px;font-weight:700;color:var(--pale);margin:14px 0 5px;text-transform:uppercase;letter-spacing:.5px}
+.lbox input{width:100%;padding:11px 14px;background:var(--bg2);border:1px solid var(--rim);border-radius:var(--r2);color:var(--white);font-family:var(--font);font-size:14px;transition:border-color .2s}
+.lbox input:focus{outline:none;border-color:var(--gold)}
+.lbtn{width:100%;margin-top:24px;padding:13px;background:var(--gold);border:none;border-radius:var(--r2);color:var(--bg);font-size:15px;font-weight:800;font-family:var(--font);cursor:pointer;transition:opacity .2s}
+.lbtn:hover{opacity:.88}
+.lerr{color:var(--red);font-size:12px;margin-top:10px;display:none}
+.lusers{margin-top:18px;padding:10px;background:var(--bg2);border-radius:var(--r2);font-size:11px;color:var(--mute);text-align:right;line-height:2}
+
+/* ── TOPBAR ── */
+.topbar{height:52px;background:var(--bg2);border-bottom:1px solid var(--rim);display:flex;align-items:center;padding:0 18px;gap:12px;position:sticky;top:0;z-index:200}
+.tlogo{font-size:17px;font-weight:900;color:var(--gold)}
+.tlogo small{font-weight:400;font-size:11px;color:var(--mute);margin-right:6px}
+.tspace{flex:1}
+.sync-indicator{display:flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:99px;transition:all .3s}
+.sync-ok{background:var(--grd);color:var(--grn)}
+.sync-err{background:var(--rd);color:var(--red)}
+.sync-busy{background:var(--gd);color:var(--gold)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.tclock{font-family:var(--mono);font-size:11px;color:var(--mute);background:var(--bg);padding:3px 9px;border-radius:var(--r3);border:1px solid var(--rim)}
+.tuser{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--pale)}
+.tav{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--pur),var(--blu));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px}
+.lout-btn{background:none;border:1px solid var(--rim);color:var(--mute);padding:4px 10px;border-radius:var(--r3);cursor:pointer;font-family:var(--font);font-size:11px;transition:all .2s}
+.lout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* ── TABS ── */
+.tabs{background:var(--bg2);border-bottom:1px solid var(--rim);padding:0 18px;display:flex;gap:2px;overflow-x:auto}
+.tab{padding:11px 16px;cursor:pointer;font-size:13px;font-weight:600;color:var(--mute);border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.tab:hover{color:var(--pale)}.tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.tbadge{background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:9px}
+.tbadge-b{background:var(--blu);color:#fff}
+
+/* ── PAGES ── */
+.page{display:none;padding:18px;animation:fade .2s ease}.page.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,#1a0b35 0%,#0d1a4a 50%,#051830 100%);border-radius:var(--r);padding:24px 28px;margin-bottom:18px;position:relative;overflow:hidden;border:1px solid var(--rim2)}
+.hero::before{content:'';position:absolute;top:-40%;right:-10%;width:350px;height:350px;background:radial-gradient(circle,rgba(155,109,255,.12),transparent 70%);pointer-events:none}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.hero-greeting{font-size:22px;font-weight:900;margin-bottom:3px}
+.hero-sub{font-size:12px;color:var(--pale)}
+.hero-prog{margin-top:16px}
+.hero-prog-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--pale);margin-bottom:6px}
+.hero-prog-track{background:rgba(255,255,255,.1);border-radius:99px;height:8px;overflow:hidden}
+.hero-prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--pur),var(--blu));transition:width .8s ease}
+.hero-stats{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.hero-stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:var(--r2);padding:8px 14px;display:flex;align-items:center;gap:7px}
+.hero-stat-val{font-size:16px;font-weight:900;font-family:var(--mono)}
+
+/* ── ALERT ── */
+.alert-banner{background:linear-gradient(90deg,rgba(255,58,92,.18),rgba(255,58,92,.05));border:1px solid var(--rb);border-radius:var(--r);padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+.alert-banner:hover{background:linear-gradient(90deg,rgba(255,58,92,.25),rgba(255,58,92,.1))}
+.alert-ico{width:38px;height:38px;background:var(--rd);border:1px solid var(--rb);border-radius:var(--r2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+
+/* ── KPI ── */
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.kcard{background:var(--bg3);border:1px solid var(--rim);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;transition:all .2s}
+.kcard:hover{border-color:var(--rim2);transform:translateY(-1px)}
+.kcard::before{content:'';position:absolute;top:0;right:0;left:0;height:3px}
+.kcard.gold::before{background:var(--gold)}.kcard.red::before{background:var(--red)}.kcard.grn::before{background:var(--grn)}.kcard.blu::before{background:var(--blu)}.kcard.orn::before{background:var(--orn)}
+.kval{font-size:32px;font-weight:900;font-family:var(--mono);line-height:1}
+.kcard.gold .kval{color:var(--gold)}.kcard.red .kval{color:var(--red)}.kcard.grn .kval{color:var(--grn)}.kcard.blu .kval{color:var(--blu)}.kcard.orn .kval{color:var(--orn)}
+.klbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mute);margin-bottom:6px}
+.kico{position:absolute;bottom:10px;left:14px;font-size:24px;opacity:.1}
+
+/* ── GRID ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:900px){.g2{grid-template-columns:1fr}}
+
+/* ── CARD ── */
+.card{background:var(--bg3);border:1px solid var(--rim);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.ctitle{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+
+/* ── TABLE ── */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:var(--bg4);padding:9px 12px;text-align:right;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);border-bottom:1px solid var(--rim);white-space:nowrap}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--rim);color:var(--pale);white-space:nowrap;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr.pr:hover td{background:var(--bg4);cursor:pointer}
+.code-cell{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blu)}
+.name-cell{font-weight:700;color:var(--white)}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap}
+.bd{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.b-red{background:var(--rd);color:var(--red)}.b-grn{background:var(--grd);color:var(--grn)}.b-gold{background:var(--gd);color:var(--gold)}.b-blu{background:var(--bld);color:var(--blu)}.b-orn{background:var(--ord);color:var(--orn)}.b-pur{background:var(--prd);color:var(--pur)}.b-dim{background:var(--bg5);color:var(--mute)}
+.dp{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:var(--r3);font-family:var(--mono);font-size:11px;font-weight:700}
+.dp-c{background:var(--rd);color:var(--red);border:1px solid var(--rb);animation:pr 2s infinite}
+.dp-w{background:var(--gd);color:var(--gold);border:1px solid var(--gb)}
+.dp-o{background:var(--grd);color:var(--grn);border:1px solid var(--grb)}
+@keyframes pr{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r2);border:none;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn:active{transform:scale(.96)}
+.btn-gold{background:var(--gold);color:var(--bg)}.btn-gold:hover{background:#e8b800}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#e82040}
+.btn-grn{background:var(--grn);color:var(--bg)}.btn-grn:hover{background:#18c080}
+.btn-blu{background:var(--blu);color:#fff}.btn-blu:hover{background:#3070e8}
+.btn-wa{background:var(--wa);color:#fff}.btn-wa:hover{background:#18b050}
+.btn-ghost{background:var(--bg4);color:var(--pale);border:1px solid var(--rim)}.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-icon{width:28px;height:28px;padding:0;justify-content:center;border-radius:var(--r3)}
+
+/* ── SEGMENT TABS ── */
+.segs{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.seg{padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--rim);color:var(--mute);background:var(--bg4);transition:all .2s}
+.seg.on{background:var(--gold);color:var(--bg);border-color:var(--gold)}
+.seg-n{background:rgba(0,0,0,.2);padding:0 7px;border-radius:99px;margin-right:5px}
+
+/* ── FILTER BAR ── */
+.fbar{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.fbar input,.fbar select{padding:7px 11px;background:var(--bg4);border:1px solid var(--rim);border-radius:var(--r2);color:var(--white);font-family:var(--font);font-size:12px;transition:border-color .2s}
+.fbar input:focus,.fbar select:focus{outline:none;border-color:var(--gold)}
+.fbar input{flex:1;min-width:180px}
+
+/* ── UPLOAD ── */
+.upz{border:2px dashed var(--rim2);border-radius:var(--r);padding:26px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg4)}
+.upz:hover,.upz.drag{border-color:var(--gold);background:var(--gd)}
+.upz input{display:none}
+
+/* ── COURIER CARD ── */
+.cc{background:var(--bg3);border:1px solid var(--rim);border-radius:var(--r);padding:14px;transition:border-color .2s}
+.cc:hover{border-color:var(--rim2)}
+.cc-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.cc-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;flex-shrink:0}
+.cc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+.cc-stat{text-align:center;background:var(--bg4);border-radius:var(--r3);padding:7px}
+.cc-stat-val{font-size:16px;font-weight:900;font-family:var(--mono)}
+.cc-prog-track{background:var(--bg5);border-radius:99px;height:5px;overflow:hidden;margin-bottom:10px}
+.cc-prog-fill{height:100%;border-radius:99px;transition:width .5s ease}
+
+/* ── WA TEMPLATES ── */
+.wa-tpl{background:var(--bg4);border:1px solid var(--rim);border-radius:var(--r2);padding:12px;margin-bottom:8px;cursor:pointer;transition:border-color .2s}
+.wa-tpl:hover{border-color:var(--wa)}
+.wa-tag{font-size:10px;padding:2px 7px;border-radius:99px;background:var(--wad);color:var(--wa);font-weight:700}
+
+/* ── REPORT ── */
+.rsec{background:var(--bg4);border-radius:var(--r2);padding:13px;margin-bottom:12px;border-right:3px solid var(--gold)}
+.rsti{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--gold);margin-bottom:9px}
+.rrow{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid var(--rim)}
+.rrow:last-child{border-bottom:none}
+.rval{font-weight:800;font-family:var(--mono)}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(8,9,15,.88);z-index:500;display:none;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(3px)}
+.overlay.on{display:flex}
+.modal{background:var(--bg3);border:1px solid var(--rim2);border-radius:14px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:var(--sh);animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--rim)}
+.mt{font-size:16px;font-weight:800}
+.mc{background:none;border:none;color:var(--mute);font-size:18px;cursor:pointer;transition:color .2s}.mc:hover{color:var(--red)}
+.mb{padding:20px}
+.mf{display:flex;gap:8px;justify-content:flex-end;padding:14px 22px;border-top:1px solid var(--rim)}
+
+/* ── FORM ── */
+.fg{margin-bottom:12px}
+.fl{display:block;font-size:11px;font-weight:700;color:var(--pale);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.fi{width:100%;padding:9px 12px;background:var(--bg2);border:1px solid var(--rim);border-radius:var(--r2);color:var(--white);font-family:var(--font);font-size:13px;transition:border-color .2s}
+.fi:focus{outline:none;border-color:var(--gold)}
+textarea.fi{resize:vertical;min-height:80px;line-height:1.6}
+
+/* ── LB ── */
+.lbi{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--rim)}
+.lbi:last-child{border-bottom:none}
+.lbr{font-family:var(--mono);font-size:10px;color:var(--dim);width:20px;text-align:center}
+.lbn{flex:1;font-size:12px;font-weight:600}
+.lbbar{width:60px;background:var(--bg5);border-radius:99px;height:4px}
+.lbfill{height:100%;border-radius:99px}
+.lbv{font-family:var(--mono);font-size:12px;font-weight:900;min-width:22px;text-align:left}
+
+/* ── PAGINATION ── */
+.pgn{display:flex;gap:5px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.pgbtn{background:var(--bg4);border:1px solid var(--rim);color:var(--pale);padding:4px 9px;border-radius:var(--r3);font-family:var(--font);font-size:11px;cursor:pointer;transition:all .15s}
+.pgbtn.on,.pgbtn:hover{background:var(--gd);border-color:var(--gb);color:var(--gold)}
+.pg-info{font-size:11px;color:var(--mute);flex:1}
+
+/* ── TOAST ── */
+#toasts{position:fixed;bottom:18px;left:18px;z-index:2000;display:flex;flex-direction:column;gap:6px}
+.toast{background:var(--bg3);border:1px solid var(--rim2);border-radius:var(--r2);padding:9px 14px;font-size:12px;min-width:230px;box-shadow:var(--sh);display:flex;align-items:center;gap:7px;animation:tin .25s ease}
+@keyframes tin{from{transform:translateX(-16px);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast.s{border-right:3px solid var(--grn)}.toast.e{border-right:3px solid var(--red)}.toast.w{border-right:3px solid var(--gold)}.toast.i{border-right:3px solid var(--blu)}
+
+/* ── LOADING OVERLAY ── */
+#loading{position:fixed;inset:0;background:var(--bg);z-index:8000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.spinner{width:42px;height:42px;border:3px solid var(--rim2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading.hide{display:none}
+
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--rim2);border-radius:3px}
+@media(max-width:768px){.kgrid{grid-template-columns:repeat(2,1fr)}.tabs{padding:0 10px}.page{padding:12px}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div style="font-size:40px">🕊️</div>
+  <div class="spinner"></div>
+  <div style="color:var(--gold);font-weight:700;font-size:16px">النورس للتوصيل</div>
+  <div style="color:var(--mute);font-size:12px" id="loading-msg">جارٍ الاتصال...</div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen" style="display:none">
+  <div class="lbox">
+    <div class="llogo">🕊️</div>
+    <div class="lbrand">النورس للتوصيل</div>
+    <div class="lsub">منظومة المتابعة الأونلاين</div>
+    <label>اسم المستخدم</label>
+    <input type="text" id="lu" placeholder="اسم المستخدم" onkeydown="if(event.key==='Enter')doLogin()">
+    <label>كلمة المرور</label>
+    <input type="password" id="lp" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="lbtn" onclick="doLogin()">دخول</button>
+    <div class="lerr" id="lerr">❌ كلمة المرور غلط</div>
+    <div class="lusers">
+      مدير: <strong>mohamed / admin123</strong><br>
+      موظف: <strong>ahmed / emp123</strong>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tlogo">🕊️ النورس <small>أونلاين</small></div>
+    <div class="tspace"></div>
+    <div class="sync-indicator sync-ok" id="sync-ind"><span class="sync-dot"></span><span id="sync-txt">متصل</span></div>
+    <div class="tclock" id="clock">--:--:--</div>
+    <div class="tuser">
+      <div class="tav" id="uav">م</div>
+      <span id="uname">—</span>
+    </div>
+    <button class="lout-btn" onclick="doLogout()">خروج</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab on" onclick="gTab('home')">🏠 الرئيسية</div>
+    <div class="tab" onclick="gTab('parcels')">📦 الطرود <span class="tbadge" id="tb-crit">0</span></div>
+    <div class="tab" onclick="gTab('couriers')">👤 المناديب <span class="tbadge tbadge-b" id="tb-couriers">0</span></div>
+    <div class="tab" onclick="gTab('whatsapp')">💬 واتساب</div>
+    <div class="tab" onclick="gTab('reports')">📊 تقارير</div>
+    <div class="tab manager-only" onclick="gTab('data')">📥 رفع بيانات</div>
+    <div class="tab manager-only" onclick="gTab('settings')">⚙️ إعدادات</div>
+  </div>
+
+  <!-- ════ HOME ════ -->
+  <div class="page on" id="tab-home">
+    <div class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="hero-greeting" id="greeting">صباح الخير 👋</div>
+          <div class="hero-sub" id="hero-date">—</div>
+          <div style="font-size:11px;color:var(--pale);margin-top:6px">
+            👤 <span id="hero-couriers">0</span> مندوب &nbsp;|&nbsp; 📦 <span id="hero-total">0</span> طرد
+          </div>
+        </div>
+        <div style="font-size:40px">📦</div>
+      </div>
+      <div class="hero-prog">
+        <div class="hero-prog-lbl"><span>تقدم التواصل اليوم</span><span id="hero-pct">0%</span></div>
+        <div class="hero-prog-track"><div class="hero-prog-fill" id="hero-fill" style="width:0%"></div></div>
+        <div style="font-size:11px;color:var(--mute);margin-top:5px"><span id="hero-ct">0</span> من <span id="hero-tc">0</span> مندوب</div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div style="color:var(--red)">⚡</div><div><div class="hero-stat-val" style="color:var(--red)" id="hs-urg">0/0</div><div style="font-size:10px;color:var(--pale)">عاجل/تحذير</div></div></div>
+        <div class="hero-stat"><div style="color:var(--gold)">📅</div><div><div class="hero-stat-val" style="color:var(--gold)" id="hs-avg">0</div><div style="font-size:10px;color:var(--pale)">متوسط التأخير (يوم)</div></div></div>
+        <div class="hero-stat"><div style="color:var(--grn)">✅</div><div><div class="hero-stat-val" style="color:var(--grn)" id="hs-sla">0%</div><div style="font-size:10px;color:var(--pale)">SLA</div></div></div>
+      </div>
+    </div>
+
+    <div class="alert-banner" id="alert-banner" onclick="gTab('parcels')" style="display:none">
+      <div class="alert-ico">⚠️</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:800;color:var(--red)" id="alert-title">طرود حرجة!</div>
+        <div style="font-size:12px;color:var(--pale)">اضغط للاطلاع والتدخل الفوري</div>
+      </div>
+      <div style="color:var(--red);font-size:18px">←</div>
+    </div>
+
+    <div class="kgrid">
+      <div class="kcard gold"><div class="klbl">إجمالي الطرود</div><div class="kval" id="k-total">0</div><div class="kico">📦</div></div>
+      <div class="kcard red"><div class="klbl">حرج +15 يوم</div><div class="kval" id="k-crit">0</div><div class="kico">🔴</div></div>
+      <div class="kcard gold"><div class="klbl">تحذير 7-15 يوم</div><div class="kval" id="k-warn">0</div><div class="kico">⏳</div></div>
+      <div class="kcard grn"><div class="klbl">في الموعد</div><div class="kval" id="k-ok">0</div><div class="kico">✅</div></div>
+      <div class="kcard blu"><div class="klbl">مناديب نشطون</div><div class="kval" id="k-couriers">0</div><div class="kico">👤</div></div>
+      <div class="kcard orn"><div class="klbl">مرتجعة</div><div class="kval" id="k-ret">0</div><div class="kico">↩️</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">🏴 أكثر المناطق تأخيراً</div>
+        <div id="area-lb"><div style="text-align:center;padding:16px;color:var(--mute)">لا بيانات</div></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">👤 المناديب الأكثر تأخيراً</div>
+        <div id="courier-lb"><div style="text-align:center;padding:16px;color:var(--mute)">لا بيانات</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PARCELS ════ -->
+  <div class="page" id="tab-parcels">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:18px;font-weight:800">📦 متابعة الطرود</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="loadParcels()">↻ تحديث</button>
+        <button class="btn btn-red btn-sm manager-only" onclick="escalateAll()">🚨 تصعيد الكل</button>
+      </div>
+    </div>
+
+    <div class="segs">
+      <div class="seg on" id="seg-all" onclick="setSeg('all')">الكل <span class="seg-n" id="sn-all">0</span></div>
+      <div class="seg" id="seg-wait" onclick="setSeg('wait')">بانتظار التواصل <span class="seg-n" id="sn-wait">0</span></div>
+      <div class="seg" id="seg-ct" onclick="setSeg('ct')">تم التواصل <span class="seg-n" id="sn-ct">0</span></div>
+      <div class="seg" id="seg-late" onclick="setSeg('late')">متأخرة <span class="seg-n" id="sn-late">0</span></div>
+    </div>
+
+    <div class="fbar">
+      <input type="text" id="p-q" placeholder="🔍 بحث بالكود، العميل، المندوب..." oninput="renderParcels()">
+      <select id="p-fd" onchange="renderParcels()"><option value="">كل التأخير</option><option value="critical">🔴 +15 يوم</option><option value="warning">🟡 7-15 يوم</option><option value="ok">🟢 في الموعد</option></select>
+      <select id="p-fa" onchange="renderParcels()"><option value="">كل المناطق</option></select>
+      <select id="p-fb" onchange="renderParcels()"><option value="">كل الفروع</option></select>
+      <select id="p-fc" onchange="renderParcels()"><option value="">كل المناديب</option></select>
+    </div>
+
+    <div style="background:var(--bg3);border:1px solid var(--rim);border-radius:var(--r);overflow:hidden">
+      <div style="padding:9px 14px;border-bottom:1px solid var(--rim);display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px;font-weight:700">الطرود</span>
+        <span class="badge b-red" id="p-cnt">0</span>
+        <div style="margin-right:auto;display:flex;gap:7px">
+          <button class="btn btn-wa btn-sm" onclick="bulkWA()">💬 واتساب للمحددين</button>
+        </div>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th><input type="checkbox" id="chk-all" onchange="toggleAll(this)"></th>
+            <th>كود الطرد</th><th>العميل</th><th>الهاتف</th>
+            <th>المندوب</th><th>المنطقة</th><th>الفرع</th>
+            <th>التأخير</th><th>الحالة</th><th>التواصل</th><th>إجراء</th>
+          </tr></thead>
+          <tbody id="p-tbody"><tr><td colspan="11" style="text-align:center;padding:32px;color:var(--mute)">📦 ارفع ملف Excel من تبويب "رفع بيانات"</td></tr></tbody>
+        </table>
+      </div>
+      <div style="padding:10px 14px;border-top:1px solid var(--rim);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="pg-info" id="p-pginfo">—</span>
+        <div class="pgn" id="p-pgn"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ COURIERS ════ -->
+  <div class="page" id="tab-couriers">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:18px;font-weight:800">👤 المناديب</div>
+      <button class="btn btn-wa btn-sm" onclick="sendAllCouriers()">💬 واتساب للكل</button>
+    </div>
+    <div class="fbar">
+      <input type="text" id="c-q" placeholder="🔍 بحث..." oninput="renderCouriers()">
+      <select id="c-fa" onchange="renderCouriers()"><option value="">كل المناطق</option></select>
+      <select id="c-fs" onchange="renderCouriers()">
+        <option value="delay">الأعلى تأخراً</option>
+        <option value="parcels">الأكثر طروداً</option>
+        <option value="rate">الأقل تسليماً</option>
+      </select>
+    </div>
+    <div id="c-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
+      <div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mute)">ارفع بيانات الطرود أولاً</div>
+    </div>
+  </div>
+
+  <!-- ════ WHATSAPP ════ -->
+  <div class="page" id="tab-whatsapp">
+    <div style="font-size:18px;font-weight:800;margin-bottom:14px">💬 مراسلة المناديب</div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">📤 إرسال سريع</div>
+        <div class="fg"><label class="fl">المندوب</label><select class="fi" id="wa-c"><option value="">— اختر —</option></select></div>
+        <div class="fg"><label class="fl">القالب</label><select class="fi" id="wa-t" onchange="previewTpl()"><option value="">— اختر قالب —</option></select></div>
+        <div class="fg"><label class="fl">الرسالة</label><textarea class="fi" id="wa-msg" rows="6"></textarea></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn btn-wa" onclick="sendWA()">📱 فتح واتساب</button>
+          <button class="btn btn-ghost" onclick="copyWA()">📋 نسخ</button>
+        </div>
+      </div>
+      <div>
+        <div class="ctitle" style="margin-bottom:10px">📋 القوالب الجاهزة</div>
+        <div id="tpl-list"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctitle">📣 إرسال جماعي</div>
+      <div class="fbar" style="margin-bottom:10px">
+        <select class="fi" style="width:auto" id="bulk-t"><option value="">— اختر قالب —</option></select>
+        <select class="fi" style="width:auto" id="bulk-a"><option value="">كل المناطق</option></select>
+        <select class="fi" style="width:auto" id="bulk-f"><option value="all">كل المناديب</option><option value="critical">المتأخرون +15 يوم</option><option value="warning">المتأخرون 7-15 يوم</option></select>
+      </div>
+      <button class="btn btn-wa" onclick="startBulk()">📱 بدء الإرسال الجماعي</button>
+      <div id="bulk-log" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- ════ REPORTS ════ -->
+  <div class="page" id="tab-reports">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:18px;font-weight:800">📊 التقارير</div>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-gold" onclick="genDaily()">⚡ الملخص اليومي</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.print()">⬇️ PDF</button>
+      </div>
+    </div>
+    <div class="g2">
+      <button class="btn btn-ghost" style="padding:18px;flex-direction:column;gap:5px;height:auto" onclick="showGeo()">🌍<br><strong>تحليل جغرافي</strong></button>
+      <button class="btn btn-ghost" style="padding:18px;flex-direction:column;gap:5px;height:auto" onclick="showCourierRpt()">👤<br><strong>أداء المناديب</strong></button>
+    </div>
+    <div id="rpt-out"></div>
+  </div>
+
+  <!-- ════ DATA ════ -->
+  <div class="page manager-only" id="tab-data">
+    <div style="font-size:18px;font-weight:800;margin-bottom:14px">📥 رفع البيانات</div>
+    <div class="g2">
+      <!-- Daily parcels upload -->
+      <div class="card" style="border-right:3px solid var(--gold)">
+        <div class="ctitle">📦 رفع الطرود اليومية <span style="font-size:10px;background:var(--gd);color:var(--gold);padding:2px 7px;border-radius:99px">يتراكم تاريخياً</span></div>
+        <div class="upz" id="upz-p" onclick="document.getElementById('fi-p').click()"
+             ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')"
+             ondrop="dropFile(event,'parcels')">
+          <input type="file" id="fi-p" accept=".xlsx,.xls,.csv" onchange="fileUpload(event,'parcels')">
+          <div style="font-size:28px;margin-bottom:8px">📂</div>
+          <div style="font-size:13px;font-weight:700">اسحب ملف الطرود أو انقر</div>
+          <div style="font-size:11px;color:var(--mute);margin-top:4px">يقبل .xlsx .xls .csv</div>
+        </div>
+        <div id="up-p-status" style="margin-top:8px;font-size:12px;color:var(--mute)"></div>
+        <div style="margin-top:12px;background:var(--bg4);border-radius:var(--r2);padding:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--pale);margin-bottom:7px">أعمدة Excel المقبولة:</div>
+          <div style="font-size:11px;color:var(--mute);line-height:2">
+            <span style="color:var(--blu);font-family:var(--mono)">كود الطرد</span> &nbsp;|&nbsp;
+            <span style="color:var(--blu);font-family:var(--mono)">العميل / اسم المستلم</span><br>
+            <span style="color:var(--blu);font-family:var(--mono)">الهاتف / هاتف العميل</span> &nbsp;|&nbsp;
+            <span style="color:var(--blu);font-family:var(--mono)">المندوب</span><br>
+            <span style="color:var(--blu);font-family:var(--mono)">المنطقة / الفرع</span> &nbsp;|&nbsp;
+            <span style="color:var(--blu);font-family:var(--mono)">التأخير (أيام) أو تاريخ الاستلام</span><br>
+            <span style="color:var(--blu);font-family:var(--mono)">الحالة</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Static data upload -->
+      <div>
+        <div class="card" style="border-right:3px solid var(--blu);margin-bottom:12px">
+          <div class="ctitle">👤 تحديث بيانات المناديب</div>
+          <div class="upz" style="padding:14px" onclick="document.getElementById('fi-c').click()">
+            <input type="file" id="fi-c" accept=".xlsx,.xls,.csv" onchange="fileUpload(event,'couriers')">
+            <div style="font-size:11px;font-weight:700">📂 رفع / تحديث المناديب</div>
+          </div>
+          <div id="up-c-status" style="margin-top:6px;font-size:12px;color:var(--mute)"></div>
+        </div>
+        <div class="card" style="border-right:3px solid var(--grn)">
+          <div class="ctitle">🏢 تحديث الفروع والمناطق</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="upz" style="padding:12px" onclick="document.getElementById('fi-b').click()">
+              <input type="file" id="fi-b" accept=".xlsx,.xls,.csv" onchange="fileUpload(event,'branches')">
+              <div style="font-size:11px;font-weight:700">📂 الفروع</div>
+            </div>
+            <div class="upz" style="padding:12px" onclick="document.getElementById('fi-a').click()">
+              <input type="file" id="fi-a" accept=".xlsx,.xls,.csv" onchange="fileUpload(event,'areas')">
+              <div style="font-size:11px;font-weight:700">📂 المناطق</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DB Stats -->
+    <div class="card">
+      <div class="ctitle">🗄️ حالة قاعدة البيانات الأونلاين</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px" id="db-stats">
+        <div style="background:var(--bg4);border-radius:var(--r2);padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:900;color:var(--gold);font-family:var(--mono)" id="db-parcels">—</div>
+          <div style="font-size:11px;color:var(--mute)">طرود مخزنة</div>
+        </div>
+        <div style="background:var(--bg4);border-radius:var(--r2);padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:900;color:var(--blu);font-family:var(--mono)" id="db-couriers">—</div>
+          <div style="font-size:11px;color:var(--mute)">مناديب</div>
+        </div>
+        <div style="background:var(--bg4);border-radius:var(--r2);padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:900;color:var(--grn);font-family:var(--mono)" id="db-branches">—</div>
+          <div style="font-size:11px;color:var(--mute)">فروع</div>
+        </div>
+        <div style="background:var(--bg4);border-radius:var(--r2);padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:900;color:var(--grn);font-family:var(--mono)" id="db-contacted">—</div>
+          <div style="font-size:11px;color:var(--mute)">تواصل اليوم</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="loadDbStats()">↻ تحديث الإحصائيات</button>
+        <button class="btn btn-red btn-sm" onclick="clearTodayParcels()">🗑️ مسح طرود اليوم</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SETTINGS ════ -->
+  <div class="page manager-only" id="tab-settings">
+    <div style="font-size:18px;font-weight:800;margin-bottom:14px">⚙️ الإعدادات</div>
+    <div class="g2">
+      <div class="card">
+        <div class="ctitle">🚦 حدود التصعيد</div>
+        <div class="fg"><label class="fl">حد الحرج (أيام)</label><input class="fi" type="number" id="s-crit" value="15"></div>
+        <div class="fg"><label class="fl">حد التحذير (أيام)</label><input class="fi" type="number" id="s-warn" value="7"></div>
+        <div class="fg"><label class="fl">مبلغ الخصم (دينار)</label><input class="fi" type="number" id="s-disc" value="50"></div>
+        <button class="btn btn-gold" onclick="saveSettings()">💾 حفظ</button>
+      </div>
+      <div class="card">
+        <div class="ctitle">👤 بيانات المدير</div>
+        <div class="fg"><label class="fl">الاسم</label><input class="fi" id="s-mname" value="محمد سعد"></div>
+        <div class="fg"><label class="fl">هاتف واتساب (218...)</label><input class="fi" id="s-mphone" placeholder="218xxxxxxxxx" dir="ltr"></div>
+        <div class="fg"><label class="fl">اسم الشركة</label><input class="fi" id="s-company" value="النورس للتوصيل"></div>
+        <button class="btn btn-gold" onclick="saveSettings()">💾 حفظ</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctitle">✏️ تعديل قوالب واتساب</div>
+      <div id="tpl-editor"></div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addTpl()">+ قالب جديد</button>
+      <button class="btn btn-gold btn-sm" style="margin-top:8px;margin-right:8px" onclick="saveTpls()">💾 حفظ القوالب</button>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- PARCEL DETAIL MODAL -->
+<div class="overlay" id="pd-modal">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="pd-title">تفاصيل الطرد</div><button class="mc" onclick="closeM('pd-modal')">✕</button></div>
+    <div class="mb" id="pd-body"></div>
+    <div class="mf"><button class="btn btn-ghost" onclick="closeM('pd-modal')">إغلاق</button></div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+// ══════════════════════════════════════════
+// SUPABASE CONFIG
+// ══════════════════════════════════════════
+const SUPA_URL = 'https://kdlcoqcwqlxawejxfjss.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkbGNvcWN3cWx4YXdlanhmanNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MzU0NzIsImV4cCI6MjA5MDIxMTQ3Mn0.rlxHDrJagHk8EiPsdVPy62bDicPXhwjZn0g6cdVQkv0';
+
+async function sb(table, method='GET', body=null, params='') {
+  const url = `${SUPA_URL}/rest/v1/${table}${params}`;
+  const headers = {
+    'apikey': SUPA_KEY,
+    'Authorization': 'Bearer ' + SUPA_KEY,
+    'Content-Type': 'application/json',
+  };
+  if (method === 'POST' || method === 'PATCH') {
+    headers['Prefer'] = 'resolution=merge-duplicates,return=minimal';
+  }
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(url, opts);
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`${res.status}: ${err}`);
+    }
+    if (method === 'GET') {
+      const data = await res.json();
+      return data;
+    }
+    return true;
+  } catch(e) {
+    if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+      throw new Error('تعذّر الاتصال بقاعدة البيانات — تأكد من اتصال الإنترنت');
+    }
+    throw e;
+  }
+}
+
+// upsert helper (POST with merge-duplicates)
+async function sbUpsert(table, data) {
+  const url = `${SUPA_URL}/rest/v1/${table}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates,return=minimal',
+    },
+    body: JSON.stringify(Array.isArray(data) ? data : [data]),
+  });
+  if (!res.ok) {
+    const e = await res.text();
+    console.error('upsert error', table, e);
+    throw new Error(e);
+  }
+  return true;
+}
+
+// count rows
+async function sbCount(table) {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${table}?select=id`, {
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Prefer': 'count=exact',
+      'Range': '0-0',
+    }
+  });
+  const cr = res.headers.get('content-range');
+  if (cr) { const m = cr.match(/\/(\d+)/); if (m) return parseInt(m[1]); }
+  return 0;
+}
+
+// ══════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════
+const USERS = {
+  'mohamed': { pass:'admin123', role:'manager', name:'محمد سعد' },
+  'ahmed':   { pass:'emp123',   role:'employee', name:'أحمد علي' },
+  'fatima':  { pass:'emp123',   role:'employee', name:'فاطمة محمد' },
+};
+let CU = null;
+
+function doLogin() {
+  const u = document.getElementById('lu').value.trim().toLowerCase();
+  const p = document.getElementById('lp').value;
+  if (USERS[u] && USERS[u].pass === p) {
+    CU = { username:u, ...USERS[u] };
+    sessionStorage.setItem('nawras_user', JSON.stringify(CU));
+    startApp();
+  } else {
+    document.getElementById('lerr').style.display = 'block';
+  }
+}
+function doLogout() {
+  sessionStorage.removeItem('nawras_user');
+  CU = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let parcels=[], couriers=[], branches=[], areas=[], contacted=new Set();
+let checkedParcels=new Set(), pPage=1, segment='all';
+const PER=20;
+let CFG={ critDays:15, warnDays:7, discount:50, company:'النورس للتوصيل', mgrPhone:'' };
+let WA_TEMPLATES=[
+  {id:'reminder', name:'تذكير بالتسليم', tag:'عام', body:'السلام عليكم {اسم} 👋\nتذكير من {شركة}\nلديك {طرود} طرد متأخر\nأعلى تأخير: {أيام} يوم\n⚠️ يرجى اتخاذ إجراء فوري\nشكراً'},
+  {id:'urgent',   name:'تنبيه عاجل',     tag:'عاجل', body:'🚨 تنبيه عاجل — {شركة}\n\nالأخ/الأخت {اسم}\nلديك {طرود} طرد في وضع حرج (تجاوز {أيام} يوم)\n\n❌ احتمال ضياع أو رفض من العميل\n\nيرجى التواصل فوراً مع المشرف\nأو سيتم احتساب خصم {خصم} دينار'},
+  {id:'discount', name:'إشعار خصم',      tag:'مالي', body:'إشعار رسمي — {شركة}\n\nالمندوب {اسم}\nبسبب تأخر {طرود} طرد لمدة {أيام} يوم\nسيتم احتساب خصم: {خصم} دينار\n\nللاستفسار تواصل مع الإدارة'},
+  {id:'return',   name:'طلب إرجاع',      tag:'إرجاع',body:'{اسم} السلام عليكم\nبخصوص الطرود المرتجعة ({طرود} طرد)\nيرجى تسليمها لفرع {فرع} اليوم\nشكراً — {شركة}'},
+  {id:'praise',   name:'تهنئة أداء',     tag:'تحفيزي',body:'👏 أحسنت يا {اسم}!\nشكراً على أدائك المتميز 💪\n— إدارة {شركة}'},
+];
+
+// ══════════════════════════════════════════
+// CLASSIFY
+// ══════════════════════════════════════════
+function cls(d){ return d>CFG.critDays?'critical':d>CFG.warnDays?'warning':'ok'; }
+function dBadge(d){ const c=cls(d),ico=c==='critical'?'🔴':c==='warning'?'🟡':'🟢',cl=c==='critical'?'dp-c':c==='warning'?'dp-w':'dp-o'; return `<span class="${cl}">${ico} ${d} يوم</span>`; }
+function sBadge(s){
+  if(!s||s==='—')return`<span class="badge b-dim">—</span>`;
+  if(s.includes('مع المندوب'))return`<span class="badge b-blu"><span class="bd"></span>${s}</span>`;
+  if(s.includes('مرتجع'))return`<span class="badge b-orn"><span class="bd"></span>${s}</span>`;
+  if(s.includes('بالطريق')||s.includes('بين'))return`<span class="badge b-pur"><span class="bd"></span>${s}</span>`;
+  if(s.includes('الشركة')||s.includes('فرع'))return`<span class="badge b-grn"><span class="bd"></span>${s}</span>`;
+  return`<span class="badge b-dim"><span class="bd"></span>${s}</span>`;
+}
+function ctBadge(pid){ return contacted.has(String(pid))?`<span class="badge b-grn">✅ تم</span>`:`<span class="badge b-dim">⏳</span>`; }
+
+// ══════════════════════════════════════════
+// SYNC STATE
+// ══════════════════════════════════════════
+function setSyncState(state, msg) {
+  const el = document.getElementById('sync-ind');
+  const tx = document.getElementById('sync-txt');
+  el.className = 'sync-indicator sync-' + state;
+  tx.textContent = msg;
+}
+
+// ══════════════════════════════════════════
+// INIT & LOAD
+// ══════════════════════════════════════════
+async function startApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  applyRole();
+  startClock();
+  document.getElementById('hero-date').textContent =
+    new Date().toLocaleDateString('ar-LY',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  await loadAll();
+  gTab('home');
+}
+
+function applyRole() {
+  const isMgr = CU.role === 'manager';
+  document.getElementById('uname').textContent = CU.name;
+  document.getElementById('uav').textContent = CU.name[0];
+  document.querySelectorAll('.manager-only').forEach(el => {
+    el.style.display = isMgr ? '' : 'none';
+  });
+}
+
+async function loadAll() {
+  setSyncState('busy', 'جارٍ التحميل...');
+  try {
+    // Load all data from Supabase in parallel
+    const [c, b, a, p, ct, tpls, cfg] = await Promise.all([
+      sb('couriers','GET',null,'?select=*&order=name'),
+      sb('branches','GET',null,'?select=*&order=name'),
+      sb('areas',   'GET',null,'?select=*&order=name'),
+      sb('parcels', 'GET',null,'?select=*&order=days.desc&limit=2000'),
+      sb('contacted','GET',null,'?select=parcel_id'),
+      sb('wa_templates','GET',null,'?select=*&order=id'),
+      sb('settings','GET',null,'?select=key,value'),
+    ]);
+    couriers = c;
+    branches = b;
+    areas    = a;
+    parcels  = p.map(row => ({
+      id:           row.id,
+      client:       row.client || '—',
+      phone:        row.phone  || '—',
+      courier:      row.courier || '—',
+      courierPhone: row.courier_phone || '',
+      area:         row.area   || '—',
+      branch:       row.branch || '—',
+      days:         parseFloat(row.days) || 0,
+      status:       row.status || '—',
+    }));
+    contacted = new Set(ct.map(r=>r.parcel_id));
+    if (tpls.length) WA_TEMPLATES = tpls.map(t=>({id:t.id,name:t.name,tag:t.tag,body:t.body}));
+    cfg.forEach(r => {
+      if (r.key==='critDays') CFG.critDays=parseInt(r.value)||15;
+      if (r.key==='warnDays') CFG.warnDays=parseInt(r.value)||7;
+      if (r.key==='discount') CFG.discount=parseFloat(r.value)||50;
+      if (r.key==='company')  CFG.company=r.value||'النورس للتوصيل';
+      if (r.key==='mgrPhone') CFG.mgrPhone=r.value||'';
+    });
+    buildDropdowns();
+    refreshAll();
+    setSyncState('ok', 'متصل');
+    loadDbStats();
+  } catch(e) {
+    console.error(e);
+    setSyncState('err', 'خطأ في الاتصال');
+    toast('خطأ في الاتصال بقاعدة البيانات: ' + e.message, 'e');
+  }
+}
+
+async function loadParcels() {
+  setSyncState('busy','تحديث...');
+  try {
+    const p = await sb('parcels','GET',null,'?select=*&order=days.desc&limit=2000');
+    parcels = p.map(row=>({
+      id:row.id, client:row.client||'—', phone:row.phone||'—',
+      courier:row.courier||'—', courierPhone:row.courier_phone||'',
+      area:row.area||'—', branch:row.branch||'—',
+      days:parseFloat(row.days)||0, status:row.status||'—',
+    }));
+    const ct = await sb('contacted','GET',null,'?select=parcel_id');
+    contacted = new Set(ct.map(r=>r.parcel_id));
+    refreshAll();
+    setSyncState('ok','متصل');
+  } catch(e) { setSyncState('err','خطأ'); toast('خطأ: '+e.message,'e'); }
+}
+
+// ══════════════════════════════════════════
+// FILE UPLOAD → SUPABASE
+// ══════════════════════════════════════════
+function dropFile(e, key) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag');
+  const file = e.dataTransfer.files[0]; if(file) parseAndUpload(file, key);
+}
+function fileUpload(e, key) {
+  const file = e.target.files[0]; if(!file) return; parseAndUpload(file, key);
+}
+
+function parseAndUpload(file, key) {
+  const reader = new FileReader();
+  reader.onload = async ev => {
+    try {
+      const wb = XLSX.read(ev.target.result, {type:'binary'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      await importToSupabase(rows, key, file.name);
+    } catch(err) { toast('خطأ في قراءة الملف: '+err.message,'e'); }
+  };
+  reader.readAsBinaryString(file);
+}
+
+function g(...keys){ return r=>{ for(const k of keys){const v=r[k];if(v!==undefined&&String(v).trim()!=='')return String(v).trim();}return ''; }; }
+
+async function importToSupabase(rows, key, fname) {
+  const statusEl = document.getElementById('up-'+key.charAt(0)+'-status');
+  if(statusEl) statusEl.textContent = '⏳ جارٍ الرفع...';
+  setSyncState('busy', 'رفع البيانات...');
+
+  try {
+    if (key === 'parcels') {
+      const data = rows.map((r,i) => {
+        const rawD = parseFloat(g('التأخير','الأيام','DelayDays','Days','التأخير (أيام)','عدد الأيام')(r));
+        let days = rawD;
+        if (!days || isNaN(days)) {
+          const ds = g('تاريخ الاستلام','تاريخ الطلب','OrderDate','Date','تاريخ','CreatedAt','created_at')(r);
+          if (ds) { const d=new Date(ds); if(!isNaN(d)) days=Math.floor((Date.now()-d.getTime())/86400000); }
+        }
+        if (isNaN(days)||days<0) days=0;
+        const id = g('كود الطرد','ParcelCode','ParcelID','الكود','Code')(r) || ('P-'+Date.now()+'-'+i);
+        return {
+          id,
+          client:        g('العميل','ClientName','Client','اسم العميل','اسم المستلم','المستلم','اسم الزبون','الزبون')(r) || '—',
+          phone:         g('الهاتف','Phone','هاتف العميل','هاتف المستلم','رقم الهاتف','هاتف الزبون')(r) || '—',
+          courier:       g('المندوب','Courier','AssignedEmployeeName')(r) || '—',
+          courier_phone: normPhone(g('هاتف المندوب','CourierPhone')(r)),
+          area:          g('المنطقة','Area','BranchName')(r) || '—',
+          branch:        g('الفرع','Branch')(r) || '—',
+          days,
+          status:        g('الحالة','Status','حالة الطرد')(r) || '—',
+          upload_date:   new Date().toISOString().split('T')[0],
+        };
+      }).filter(r => r.id && r.id !== '—');
+
+      // Upload in batches of 200
+      const BATCH = 200;
+      for (let i=0; i<data.length; i+=BATCH) {
+        await sbUpsert('parcels', data.slice(i,i+BATCH));
+      }
+      if(statusEl) statusEl.innerHTML = `<span style="color:var(--grn)">✅ تم رفع ${data.length} طرد</span>`;
+      toast(`✅ ${data.length} طرد مرفوع أونلاين`, 's');
+      await loadParcels();
+      loadDbStats();
+
+    } else if (key === 'couriers') {
+      if (couriers.length>0 && !confirm(`استبدال ${couriers.length} مندوب بالبيانات الجديدة؟`)) return;
+      const data = rows.map(r => ({
+        id:     g('الكود','id','Code')(r) || (Math.random()*99999|0).toString(),
+        name:   g('الاسم','Name','اسم المندوب')(r) || '—',
+        phone:  normPhone(g('الهاتف','Phone','هاتف (واتساب)')(r)),
+        phone2: normPhone(g('رقم الهاتف2','Phone2')(r)),
+        branch: g('الفرع','Branch')(r),
+        area:   g('المدينة','المنطقة','Area')(r),
+        title:  g('المسمى','Title','المسمى الوظيفي')(r),
+      })).filter(r=>r.name&&r.name!=='—');
+      await sb('couriers','DELETE',null,'?id=neq.0');
+      await sbUpsert('couriers', data);
+      couriers = data;
+      if(statusEl) statusEl.innerHTML = `<span style="color:var(--grn)">✅ ${data.length} مندوب</span>`;
+      toast(`✅ ${data.length} مندوب`, 's');
+      buildDropdowns(); refreshAll();
+
+    } else if (key === 'branches') {
+      const data = rows.map(r=>({
+        name:    g('اسم الفرع','الفرع','BranchName','Branch')(r),
+        area:    g('المنطقة','Area')(r),
+        manager: g('مدير الفرع','المدير','Manager')(r),
+        phone:   normPhone(g('هاتف المدير','الهاتف','Phone')(r)),
+      })).filter(r=>r.name);
+      await sb('branches','DELETE',null,'?id=gt.0');
+      await sbUpsert('branches', data);
+      branches = data;
+      toast(`✅ ${data.length} فرع`, 's');
+
+    } else if (key === 'areas') {
+      const data = rows.map(r=>({
+        name:       g('اسم المنطقة','المنطقة','AreaName','Area')(r),
+        code:       g('كود المنطقة','الكود','AreaCode','Code')(r),
+        supervisor: g('المشرف المسؤول','المسؤول','Supervisor')(r),
+      })).filter(r=>r.name);
+      await sb('areas','DELETE',null,'?id=gt.0');
+      await sbUpsert('areas', data);
+      areas = data;
+      toast(`✅ ${data.length} منطقة`, 's');
+    }
+    setSyncState('ok','متصل');
+    loadDbStats();
+  } catch(err) {
+    setSyncState('err','خطأ');
+    console.error(err);
+    toast('خطأ في الرفع: '+err.message,'e');
+    if(statusEl) statusEl.innerHTML=`<span style="color:var(--red)">❌ ${err.message}</span>`;
+  }
+}
+
+function normPhone(p) {
+  if (!p) return '';
+  p = p.replace(/[^0-9]/g,'');
+  if (p.startsWith('0') && p.length===10) p='218'+p.slice(1);
+  return p;
+}
+
+// ══════════════════════════════════════════
+// TABS & DROPDOWNS
+// ══════════════════════════════════════════
+function gTab(id) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('tab-'+id)?.classList.add('on');
+  document.querySelectorAll('.tab').forEach(t=>{if((t.getAttribute('onclick')||'').includes("'"+id+"'"))t.classList.add('on');});
+  const renders={home:renderHome,parcels:renderParcels,couriers:renderCouriers,whatsapp:renderWA,data:loadDbStats};
+  if(renders[id]) renders[id]();
+}
+
+function buildDropdowns() {
+  const an=[...new Set(parcels.map(p=>p.area).concat(areas.map(a=>a.name)).concat(couriers.map(c=>c.area)))].filter(x=>x&&x!=='—').sort();
+  const bn=[...new Set(parcels.map(p=>p.branch).concat(branches.map(b=>b.name)))].filter(x=>x&&x!=='—').sort();
+  const cn=[...new Set(parcels.map(p=>p.courier).concat(couriers.map(c=>c.name)))].filter(x=>x&&x!=='—').sort();
+  ['p-fa','c-fa','bulk-a'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">كل المناطق</option>'+an.map(a=>`<option>${a}</option>`).join('');});
+  const pb=document.getElementById('p-fb');if(pb)pb.innerHTML='<option value="">كل الفروع</option>'+bn.map(b=>`<option>${b}</option>`).join('');
+  const pc=document.getElementById('p-fc');if(pc)pc.innerHTML='<option value="">كل المناديب</option>'+cn.map(c=>`<option>${c}</option>`).join('');
+  const wac=document.getElementById('wa-c');if(wac)wac.innerHTML='<option value="">— اختر —</option>'+[...new Set(couriers.map(c=>c.name))].sort().map(c=>`<option>${c}</option>`).join('');
+}
+
+// ══════════════════════════════════════════
+// REFRESH
+// ══════════════════════════════════════════
+function refreshAll(){ updateKPIs(); renderHome(); renderParcels(); renderCouriers(); renderWA(); }
+
+function updateKPIs() {
+  const crit=parcels.filter(p=>cls(p.days)==='critical').length;
+  const warn=parcels.filter(p=>cls(p.days)==='warning').length;
+  const ok=parcels.filter(p=>cls(p.days)==='ok').length;
+  const ret=parcels.filter(p=>p.status&&p.status.includes('مرتجع')).length;
+  document.getElementById('k-total').textContent=parcels.length;
+  document.getElementById('k-crit').textContent=crit;
+  document.getElementById('k-warn').textContent=warn;
+  document.getElementById('k-ok').textContent=ok;
+  document.getElementById('k-couriers').textContent=couriers.length||new Set(parcels.map(p=>p.courier)).size;
+  document.getElementById('k-ret').textContent=ret;
+  document.getElementById('tb-crit').textContent=crit;
+  document.getElementById('tb-couriers').textContent=couriers.length||0;
+  // hero
+  const tc=couriers.length||new Set(parcels.map(p=>p.courier)).size;
+  const pct=tc?Math.round(contacted.size/tc*100):0;
+  document.getElementById('hero-total').textContent=parcels.length;
+  document.getElementById('hero-couriers').textContent=tc;
+  document.getElementById('hero-pct').textContent=pct+'%';
+  document.getElementById('hero-fill').style.width=pct+'%';
+  document.getElementById('hero-ct').textContent=contacted.size;
+  document.getElementById('hero-tc').textContent=tc;
+  document.getElementById('hs-urg').textContent=crit+'/'+(crit+warn);
+  const avg=parcels.length?(parcels.reduce((s,p)=>s+p.days,0)/parcels.length).toFixed(1):0;
+  document.getElementById('hs-avg').textContent=avg;
+  const sla=parcels.length?Math.round(ok/parcels.length*100):0;
+  document.getElementById('hs-sla').textContent=sla+'%';
+  const ab=document.getElementById('alert-banner');
+  if(crit>0){ab.style.display='flex';document.getElementById('alert-title').textContent=`${crit} طرد في خطر حرج (+${CFG.critDays} يوم)!`;}
+  else ab.style.display='none';
+}
+
+// ══════════════════════════════════════════
+// HOME
+// ══════════════════════════════════════════
+function renderHome() {
+  updateKPIs();
+  const h=document.getElementById('greeting');
+  const hr=new Date().getHours();
+  const gr=hr<12?'صباح الخير':hr<17?'مساء الخير':'مساء النور';
+  h.textContent=gr+' 👋';
+  const crit=parcels.filter(p=>cls(p.days)==='critical');
+  renderLB('area-lb',crit,'area','var(--red)');
+  renderLB('courier-lb',crit,'courier','var(--gold)');
+}
+function renderLB(elId,data,key,color){
+  const map={};data.forEach(p=>{map[p[key]]=(map[p[key]]||0)+1;});
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const max=sorted[0]?.[1]||1;
+  const el=document.getElementById(elId);
+  if(!sorted.length){el.innerHTML=`<div style="text-align:center;padding:16px;color:var(--mute)">✅ لا تأخيرات</div>`;return;}
+  el.innerHTML=sorted.map(([n,c],i)=>`<div class="lbi"><div class="lbr">#${i+1}</div><div class="lbn">${n}</div><div class="lbbar"><div class="lbfill" style="width:${c/max*100}%;background:${color}"></div></div><div class="lbv" style="color:${color}">${c}</div></div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// PARCELS TABLE
+// ══════════════════════════════════════════
+function setSeg(s){
+  segment=s;
+  ['all','wait','ct','late'].forEach(x=>{
+    const el=document.getElementById('seg-'+x);
+    if(el)el.className=x===s?'seg on':'seg';
+  });
+  pPage=1; renderParcels();
+}
+
+function renderParcels() {
+  const q=(document.getElementById('p-q')?.value||'').toLowerCase();
+  const fd=document.getElementById('p-fd')?.value||'';
+  const fa=document.getElementById('p-fa')?.value||'';
+  const fb=document.getElementById('p-fb')?.value||'';
+  const fc=document.getElementById('p-fc')?.value||'';
+  let list=parcels;
+  if(CU?.role==='employee') list=list.filter(p=>p.courier===CU.name);
+  const wait=list.filter(p=>!contacted.has(String(p.id)));
+  const ct=list.filter(p=>contacted.has(String(p.id)));
+  const late=list.filter(p=>cls(p.days)!=='ok');
+  document.getElementById('sn-all').textContent=list.length;
+  document.getElementById('sn-wait').textContent=wait.length;
+  document.getElementById('sn-ct').textContent=ct.length;
+  document.getElementById('sn-late').textContent=late.length;
+  if(segment==='wait') list=wait;
+  else if(segment==='ct') list=ct;
+  else if(segment==='late') list=late;
+  list=list.filter(p=>{
+    if(fd&&cls(p.days)!==fd)return false;
+    if(fa&&p.area!==fa)return false;
+    if(fb&&p.branch!==fb)return false;
+    if(fc&&p.courier!==fc)return false;
+    if(q&&!`${p.id} ${p.client} ${p.courier} ${p.area} ${p.branch} ${p.phone}`.toLowerCase().includes(q))return false;
+    return true;
+  });
+  list.sort((a,b)=>b.days-a.days);
+  const total=list.length;
+  const totalP=Math.max(1,Math.ceil(total/PER));
+  if(pPage>totalP)pPage=1;
+  const page=list.slice((pPage-1)*PER,pPage*PER);
+  document.getElementById('p-cnt').textContent=total+' طرد';
+  const isMgr=CU?.role==='manager';
+  const tbody=document.getElementById('p-tbody');
+  if(!page.length){tbody.innerHTML=`<tr><td colspan="11" style="text-align:center;padding:28px;color:var(--mute)">🔍 لا توجد نتائج</td></tr>`;return;}
+  tbody.innerHTML=page.map(p=>{
+    const pid=String(p.id).replace(/"/g,'&quot;');
+    return`<tr class="pr" data-pid="${pid}">
+      <td onclick="event.stopPropagation()"><input type="checkbox" data-pid="${pid}" ${checkedParcels.has(String(p.id))?'checked':''} onchange="this.checked?checkedParcels.add(this.dataset.pid):checkedParcels.delete(this.dataset.pid)"></td>
+      <td class="code-cell">${p.id}</td>
+      <td class="name-cell">${p.client}</td>
+      <td style="font-family:var(--mono);font-size:11px">${p.phone}</td>
+      <td style="color:var(--white);font-weight:600">${p.courier}</td>
+      <td><span class="badge b-pur" style="font-size:10px">${p.area}</span></td>
+      <td style="font-size:11px;color:var(--mute)">${p.branch}</td>
+      <td>${dBadge(p.days)}</td>
+      <td>${sBadge(p.status)}</td>
+      <td>${ctBadge(p.id)}</td>
+      <td onclick="event.stopPropagation()">
+        <div style="display:flex;gap:3px">
+          <button class="btn btn-wa btn-icon btn-sm" data-action="wa" data-pid="${pid}" title="واتساب">💬</button>
+          <button class="btn btn-ghost btn-icon btn-sm" data-action="detail" data-pid="${pid}" title="تفاصيل">👁</button>
+          ${cls(p.days)==='critical'?`<button class="btn btn-red btn-icon btn-sm" data-action="esc" data-pid="${pid}" title="تصعيد">🚨</button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  // Delegation
+  if(!tbody._del){
+    tbody._del=true;
+    tbody.addEventListener('click',e=>{
+      const btn=e.target.closest('[data-action]');
+      const row=e.target.closest('.pr');
+      if(btn){
+        e.stopPropagation();
+        const pid=btn.dataset.pid;
+        if(btn.dataset.action==='wa') doWA(pid);
+        else if(btn.dataset.action==='detail') openDetail(pid);
+        else if(btn.dataset.action==='esc') escalate(pid);
+      } else if(row&&!e.target.closest('input')){
+        openDetail(row.dataset.pid);
+      }
+    });
+  }
+  // Pagination
+  const info=document.getElementById('p-pginfo'),pgn=document.getElementById('p-pgn');
+  const s=(pPage-1)*PER+1,end=Math.min(pPage*PER,total);
+  info.textContent=total>0?`${s}–${end} من ${total} طرد`:'لا نتائج';
+  pgn.innerHTML='';
+  for(let i=Math.max(1,pPage-2);i<=Math.min(totalP,pPage+2);i++){
+    const b=document.createElement('button');
+    b.className='pgbtn'+(i===pPage?' on':'');
+    b.textContent=i;b.onclick=()=>{pPage=i;renderParcels();};
+    pgn.appendChild(b);
+  }
+}
+
+function toggleAll(el){document.querySelectorAll('#p-tbody input[type=checkbox]').forEach(cb=>{cb.checked=el.checked;el.checked?checkedParcels.add(cb.dataset.pid):checkedParcels.delete(cb.dataset.pid);});}
+
+// ══════════════════════════════════════════
+// PARCEL DETAIL
+// ══════════════════════════════════════════
+function openDetail(pid) {
+  pid=String(pid);
+  const p=parcels.find(x=>String(x.id)===pid);if(!p)return;
+  const c=couriers.find(x=>x.name===p.courier);
+  const phone=normPhone(c?.phone||p.courierPhone||'');
+  const clsD=cls(p.days);
+  document.getElementById('pd-title').textContent=p.id;
+  document.getElementById('pd-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="rsec"><div class="rsti">بيانات الطرد</div>
+        <div class="rrow"><span>الكود</span><span class="rval" style="color:var(--blu);font-family:var(--mono)">${p.id}</span></div>
+        <div class="rrow"><span>العميل</span><span class="rval">${p.client}</span></div>
+        <div class="rrow"><span>هاتف العميل</span><span class="rval" style="font-family:var(--mono)">${p.phone}</span></div>
+        <div class="rrow"><span>الحالة</span><span class="rval">${sBadge(p.status)}</span></div>
+      </div>
+      <div class="rsec"><div class="rsti">المندوب</div>
+        <div class="rrow"><span>الاسم</span><span class="rval">${p.courier}</span></div>
+        <div class="rrow"><span>الهاتف</span><span class="rval" style="font-family:var(--mono)">${phone||'—'}</span></div>
+        <div class="rrow"><span>المنطقة</span><span class="rval">${p.area}</span></div>
+        <div class="rrow"><span>الفرع</span><span class="rval">${p.branch}</span></div>
+      </div>
+    </div>
+    <div class="rsec"><div class="rsti">التأخير</div>
+      <div class="rrow"><span>الأيام</span><span class="rval">${dBadge(p.days)}</span></div>
+      <div class="rrow"><span>التصنيف</span><span class="rval" style="color:${clsD==='critical'?'var(--red)':clsD==='warning'?'var(--gold)':'var(--grn)'}">
+        ${clsD==='critical'?`⚠️ حرج +${CFG.critDays} يوم`:clsD==='warning'?`تحذير ${CFG.warnDays}–${CFG.critDays} يوم`:'✅ في الموعد'}
+      </span></div>
+      <div class="rrow"><span>التواصل</span><span class="rval">${ctBadge(p.id)}</span></div>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn btn-wa" onclick="doWA('${pid}');closeM('pd-modal')">💬 واتساب</button>
+      ${clsD!=='ok'?`<button class="btn btn-red" onclick="escalate('${pid}');closeM('pd-modal')">🚨 تصعيد</button>`:''}
+      <button class="btn btn-ghost" onclick="markCt('${pid}');closeM('pd-modal')">✅ تم التواصل</button>
+    </div>`;
+  document.getElementById('pd-modal').classList.add('on');
+}
+
+// ══════════════════════════════════════════
+// COURIERS
+// ══════════════════════════════════════════
+function renderCouriers(){
+  const q=(document.getElementById('c-q')?.value||'').toLowerCase();
+  const fa=document.getElementById('c-fa')?.value||'';
+  const fs=document.getElementById('c-fs')?.value||'delay';
+  const stats={};
+  parcels.forEach(p=>{
+    if(!stats[p.courier])stats[p.courier]={name:p.courier,area:p.area,branch:p.branch,phone:'',total:0,crit:0,warn:0,ok:0,maxD:0,ret:0};
+    const s=stats[p.courier];s.total++;const c=cls(p.days);s[c]++;
+    if(p.days>s.maxD)s.maxD=p.days;
+    if(p.status&&p.status.includes('مرتجع'))s.ret++;
+  });
+  couriers.forEach(c=>{if(stats[c.name])stats[c.name].phone=c.phone;else stats[c.name]={name:c.name,area:c.area||'',branch:c.branch||'',phone:c.phone||'',total:0,crit:0,warn:0,ok:0,maxD:0,ret:0};});
+  let list=Object.values(stats).filter(c=>{
+    if(fa&&c.area!==fa)return false;
+    if(q&&!`${c.name} ${c.area} ${c.branch}`.toLowerCase().includes(q))return false;
+    return true;
+  });
+  if(fs==='delay')list.sort((a,b)=>b.maxD-a.maxD);
+  else if(fs==='parcels')list.sort((a,b)=>b.total-a.total);
+  else list.sort((a,b)=>(a.ok/Math.max(a.total,1))-(b.ok/Math.max(b.total,1)));
+  document.getElementById('tb-couriers').textContent=list.length;
+  const grid=document.getElementById('c-grid');
+  if(!list.length){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mute)">لا بيانات</div>`;return;}
+  const AVC=['linear-gradient(135deg,#9b6dff,#4f8aff)','linear-gradient(135deg,#ff3a5c,#ff7c2a)','linear-gradient(135deg,#22d896,#4f8aff)','linear-gradient(135deg,#f5c842,#ff7c2a)','linear-gradient(135deg,#ff7c2a,#9b6dff)'];
+  grid.innerHTML=list.map((c,i)=>{
+    const rate=c.total?Math.round(c.ok/c.total*100):0;
+    const rc=rate>70?'var(--grn)':rate>40?'var(--gold)':'var(--red)';
+    const ph=normPhone(c.phone||'');
+    const cname=c.name.replace(/'/g,"\\'");
+    return`<div class="cc">
+      <div class="cc-head">
+        <div class="cc-av" style="background:${AVC[i%AVC.length]}">${c.name[0]}</div>
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:13px">${c.name}</div>
+          <div style="font-size:11px;color:var(--mute)">${c.area}${c.branch?' • '+c.branch:''}</div>
+          <div style="font-size:10px;color:var(--dim);font-family:var(--mono)">${c.phone||'—'}</div>
+        </div>
+        <span class="badge ${c.crit>0?'b-red':c.warn>0?'b-gold':'b-grn'}">${c.crit>0?'حرج':c.warn>0?'تحذير':'طبيعي'}</span>
+      </div>
+      <div class="cc-stats">
+        <div class="cc-stat"><div class="cc-stat-val" style="color:var(--gold)">${c.total}</div><div style="font-size:10px;color:var(--mute)">طرد</div></div>
+        <div class="cc-stat"><div class="cc-stat-val" style="color:var(--red)">${c.crit}</div><div style="font-size:10px;color:var(--mute)">حرج</div></div>
+        <div class="cc-stat"><div class="cc-stat-val" style="color:${rc}">${rate}%</div><div style="font-size:10px;color:var(--mute)">في الموعد</div></div>
+      </div>
+      <div class="cc-prog-track"><div class="cc-prog-fill" style="width:${rate}%;background:${rc}"></div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-wa btn-sm" onclick="sendToCourier('${cname}','${ph}')">💬 واتساب</button>
+        <button class="btn btn-ghost btn-sm" onclick="markCourierCt('${cname}')">✅ تم التواصل</button>
+        ${c.crit>0?`<button class="btn btn-red btn-sm" onclick="escalateCourier('${cname}')">🚨 ${c.crit}</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// WHATSAPP
+// ══════════════════════════════════════════
+function renderWA(){
+  const opts=WA_TEMPLATES.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  ['wa-t','bulk-t'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">— اختر قالب —</option>'+opts;});
+  document.getElementById('tpl-list').innerHTML=WA_TEMPLATES.map(t=>`
+    <div class="wa-tpl" onclick="applyTpl('${t.id}')">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:12px;font-weight:700">${t.name}</span>
+        <span class="wa-tag">${t.tag}</span>
+      </div>
+      <div style="font-size:11px;color:var(--mute)">${t.body.substring(0,80)}...</div>
+    </div>`).join('');
+}
+function applyTpl(id){
+  const tpl=WA_TEMPLATES.find(t=>t.id===id);if(!tpl)return;
+  document.getElementById('wa-t').value=id;
+  previewTpl();
+}
+function previewTpl(){
+  const id=document.getElementById('wa-t').value;
+  const courier=document.getElementById('wa-c').value||'المندوب';
+  if(!id){document.getElementById('wa-msg').value='';return;}
+  const tpl=WA_TEMPLATES.find(t=>t.id===id);if(!tpl)return;
+  const stats=getCStats(courier);
+  document.getElementById('wa-msg').value=buildMsg(tpl.body,courier,stats);
+}
+function getCStats(name){
+  const cp=parcels.filter(p=>p.courier===name);
+  return{total:cp.length,crit:cp.filter(p=>cls(p.days)==='critical').length,maxDelay:cp.length?Math.max(...cp.map(p=>p.days)):0,branch:cp[0]?.branch||'—',area:cp[0]?.area||'—'};
+}
+function buildMsg(body,name,stats){
+  return body.replace(/{اسم}/g,name).replace(/{طرود}/g,stats.total).replace(/{أيام}/g,stats.maxDelay||0).replace(/{فرع}/g,stats.branch||'—').replace(/{منطقة}/g,stats.area||'—').replace(/{خصم}/g,CFG.discount).replace(/{شركة}/g,CFG.company);
+}
+function sendWA(){
+  const courier=document.getElementById('wa-c').value;
+  const msg=document.getElementById('wa-msg').value;
+  if(!courier){toast('اختر مندوباً','e');return;}
+  if(!msg.trim()){toast('اختر قالباً','e');return;}
+  const c=couriers.find(x=>x.name===courier);
+  const ph=normPhone(c?.phone||'');
+  openWAUrl(ph,msg);
+  markCourierCt(courier);
+}
+function sendToCourier(name,phone){
+  const tpl=WA_TEMPLATES.find(t=>t.id==='reminder')||WA_TEMPLATES[0];
+  const msg=buildMsg(tpl.body,name,getCStats(name));
+  openWAUrl(phone,msg);
+  markCourierCt(name);
+}
+function sendAllCouriers(){
+  const list=[...new Set(parcels.map(p=>p.courier))];
+  list.forEach(name=>{
+    const c=couriers.find(x=>x.name===name);
+    const ph=normPhone(c?.phone||'');
+    const tpl=WA_TEMPLATES[0];
+    const msg=buildMsg(tpl.body,name,getCStats(name));
+    if(ph) window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg),'_blank');
+  });
+  toast('تم فتح واتساب لكل المناديب','s');
+}
+function openWAUrl(phone,msg){
+  if(phone){
+    window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(msg),'_blank');
+  } else {
+    navigator.clipboard.writeText(msg).catch(()=>{});
+    toast('لا يوجد رقم — تم نسخ الرسالة','w');
+  }
+}
+function copyWA(){
+  const msg=document.getElementById('wa-msg').value;
+  if(!msg){toast('لا توجد رسالة','e');return;}
+  navigator.clipboard.writeText(msg).then(()=>toast('تم النسخ','s'));
+}
+function startBulk(){
+  const tId=document.getElementById('bulk-t').value;
+  const area=document.getElementById('bulk-a').value;
+  const filter=document.getElementById('bulk-f').value;
+  if(!tId){toast('اختر قالب','e');return;}
+  const tpl=WA_TEMPLATES.find(t=>t.id===tId);if(!tpl)return;
+  const allStats={}; parcels.forEach(p=>{if(!allStats[p.courier])allStats[p.courier]={name:p.courier,area:p.area,branch:p.branch,total:0,crit:0,warn:0,ok:0,maxDelay:0};const s=allStats[p.courier];s.total++;const c=cls(p.days);s[c]++;if(p.days>s.maxDelay)s.maxDelay=p.days;});
+  let targets=Object.values(allStats);
+  if(area)targets=targets.filter(c=>c.area===area);
+  if(filter==='critical')targets=targets.filter(c=>c.crit>0);
+  if(filter==='warning')targets=targets.filter(c=>c.warn>0&&c.crit===0);
+  const logEl=document.getElementById('bulk-log');
+  logEl.innerHTML=`<div style="font-size:12px;color:var(--gold);margin-bottom:8px">إرسال لـ ${targets.length} مندوب:</div>`;
+  targets.forEach((c,i)=>{
+    const ph=normPhone(couriers.find(x=>x.name===c.name)?.phone||'');
+    const msg=buildMsg(tpl.body,c.name,c);
+    const url=ph?'https://wa.me/'+ph+'?text='+encodeURIComponent(msg):'';
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--rim);font-size:12px';
+    d.innerHTML=`<span style="color:var(--pale)">${i+1}. ${c.name}</span>${url?`<a href="${url}" target="_blank" class="btn btn-wa btn-sm" style="text-decoration:none">💬 فتح</a>`:'<span style="color:var(--mute)">لا رقم</span>'}`;
+    logEl.appendChild(d);
+  });
+  toast(`${targets.length} رسالة جاهزة`,'s');
+}
+
+// ══════════════════════════════════════════
+// WA ACTIONS
+// ══════════════════════════════════════════
+function doWA(pid){
+  pid=String(pid);
+  const p=parcels.find(x=>String(x.id)===pid);if(!p)return;
+  const c=couriers.find(x=>x.name===p.courier);
+  const ph=normPhone(c?.phone||p.courierPhone||'');
+  const tpl=cls(p.days)==='critical'?WA_TEMPLATES.find(t=>t.id==='urgent')||WA_TEMPLATES[0]:WA_TEMPLATES[0];
+  const stats=getCStats(p.courier);
+  const msg=buildMsg(tpl.body,p.courier,stats)+'\n\n📦 رقم الطرد: '+p.id+'\nالعميل: '+p.client+(p.phone&&p.phone!=='—'?'\nهاتف العميل: '+p.phone:'');
+  openWAUrl(ph,msg);
+  markCt(pid);
+}
+
+// ══════════════════════════════════════════
+// MARK CONTACTED (saves to Supabase)
+// ══════════════════════════════════════════
+async function markCt(pid) {
+  pid=String(pid);
+  contacted.add(pid);
+  updateKPIs();
+  // update row badge
+  document.querySelectorAll('#p-tbody .pr').forEach(row=>{
+    if(row.dataset.pid===pid){
+      const tds=row.querySelectorAll('td');
+      if(tds[9])tds[9].innerHTML='<span class="badge b-grn">✅ تم</span>';
+    }
+  });
+  // Save to Supabase
+  try {
+    await sbUpsert('contacted',[{parcel_id:pid}]);
+  } catch(e){ console.warn('markCt save failed',e); }
+}
+
+async function markCourierCt(name) {
+  const ids=parcels.filter(p=>p.courier===name).map(p=>String(p.id));
+  ids.forEach(id=>contacted.add(id));
+  updateKPIs();
+  toast(`✅ تم تسجيل التواصل مع ${name}`,'s');
+  try {
+    await sbUpsert('contacted', ids.map(id=>({parcel_id:id})));
+  } catch(e){ console.warn('markCourierCt save failed',e); }
+}
+
+function escalate(pid){
+  const p=parcels.find(x=>String(x.id)===String(pid));
+  toast(`🚨 تصعيد الطرد ${pid}${p?' — '+p.courier:''}`,'e');
+}
+function escalateCourier(name){toast(`🚨 تصعيد طرود المندوب ${name}`,'e');}
+function escalateAll(){
+  const n=parcels.filter(p=>cls(p.days)==='critical').length;
+  if(!n){toast('لا طرود حرجة','w');return;}
+  toast(`🚨 تصعيد ${n} طرد حرج`,'e');
+}
+function bulkWA(){
+  if(!checkedParcels.size){toast('حدد طروداً أولاً','w');return;}
+  const byC={};
+  [...checkedParcels].forEach(pid=>{
+    const p=parcels.find(x=>String(x.id)===String(pid));if(!p)return;
+    if(!byC[p.courier])byC[p.courier]=[];
+    byC[p.courier].push(p);
+  });
+  Object.entries(byC).forEach(([name])=>sendToCourier(name,normPhone(couriers.find(x=>x.name===name)?.phone||'')));
+  toast(`واتساب لـ ${Object.keys(byC).length} مندوب`,'s');
+}
+
+// ══════════════════════════════════════════
+// REPORTS
+// ══════════════════════════════════════════
+function showGeo(){
+  const map={};parcels.forEach(p=>{if(!map[p.area])map[p.area]={t:0,c:0,w:0,o:0};const s=map[p.area];s.t++;s[cls(p.days)==='critical'?'c':cls(p.days)==='warning'?'w':'o']++;});
+  const rows=Object.entries(map).sort((a,b)=>b[1].c-a[1].c);
+  document.getElementById('rpt-out').innerHTML=`<div class="card"><div class="ctitle">🌍 تحليل جغرافي</div><div class="tw"><table><thead><tr><th>المنطقة</th><th>إجمالي</th><th>حرج</th><th>تحذير</th><th>موعد</th><th>%الحرج</th></tr></thead><tbody>${rows.map(([a,v])=>`<tr><td><strong>${a}</strong></td><td>${v.t}</td><td style="color:var(--red);font-weight:800">${v.c}</td><td style="color:var(--gold)">${v.w}</td><td style="color:var(--grn)">${v.o}</td><td>${v.t?Math.round(v.c/v.t*100)+'%':'—'}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function showCourierRpt(){
+  const stats={};parcels.forEach(p=>{if(!stats[p.courier])stats[p.courier]={n:p.courier,t:0,c:0,w:0,o:0,mx:0};const s=stats[p.courier];s.t++;s[cls(p.days)==='critical'?'c':cls(p.days)==='warning'?'w':'o']++;if(p.days>s.mx)s.mx=p.days;});
+  const rows=Object.values(stats).sort((a,b)=>b.c-a.c);
+  document.getElementById('rpt-out').innerHTML=`<div class="card"><div class="ctitle">👤 أداء المناديب</div><div class="tw"><table><thead><tr><th>المندوب</th><th>طرود</th><th>حرج</th><th>تحذير</th><th>موعد</th><th>أقصى تأخير</th><th>نسبة الموعد</th></tr></thead><tbody>${rows.map(r=>`<tr><td><strong>${r.n}</strong></td><td>${r.t}</td><td style="color:var(--red);font-weight:800">${r.c}</td><td style="color:var(--gold)">${r.w}</td><td style="color:var(--grn)">${r.o}</td><td style="font-family:var(--mono)">${r.mx} يوم</td><td>${r.t?Math.round(r.o/r.t*100)+'%':'—'}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function genDaily(){
+  const crit=parcels.filter(p=>cls(p.days)==='critical').length;
+  const warn=parcels.filter(p=>cls(p.days)==='warning').length;
+  const ok=parcels.filter(p=>cls(p.days)==='ok').length;
+  const sla=parcels.length?Math.round(ok/parcels.length*100):0;
+  const avg=parcels.length?(parcels.reduce((s,p)=>s+p.days,0)/parcels.length).toFixed(1):0;
+  document.getElementById('rpt-out').innerHTML=`<div class="card"><div class="ctitle">📋 الملخص اليومي — ${new Date().toLocaleString('ar-LY')}</div>
+    <div class="rsec"><div class="rsti">حالة الشبكة</div>
+      <div class="rrow"><span>إجمالي</span><span class="rval">${parcels.length}</span></div>
+      <div class="rrow"><span>حرج +${CFG.critDays} يوم</span><span class="rval" style="color:var(--red)">${crit}</span></div>
+      <div class="rrow"><span>تحذير</span><span class="rval" style="color:var(--gold)">${warn}</span></div>
+      <div class="rrow"><span>في الموعد</span><span class="rval" style="color:var(--grn)">${ok}</span></div>
+      <div class="rrow"><span>SLA</span><span class="rval" style="color:${sla>70?'var(--grn)':sla>50?'var(--gold)':'var(--red)'}">${sla}%</span></div>
+      <div class="rrow"><span>متوسط التأخير</span><span class="rval">${avg} يوم</span></div>
+      <div class="rrow"><span>تم التواصل</span><span class="rval" style="color:var(--grn)">${contacted.size}</span></div>
+    </div>
+    <div class="rsec"><div class="rsti">خطة الغد</div><textarea class="fi" rows="3">• مراجعة الطرود الحرجة (${crit} طرد)\n• متابعة مناديب التأخير\n• مراجعة المرتجعات</textarea></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn btn-gold" onclick="window.print()">⬇️ PDF</button>
+      <button class="btn btn-wa" onclick="sendDailyWA()">📱 إرسال للمدير</button>
+    </div>
+  </div>`;
+  toast('تم توليد الملخص','s');
+}
+function sendDailyWA(){
+  const crit=parcels.filter(p=>cls(p.days)==='critical').length;
+  const warn=parcels.filter(p=>cls(p.days)==='warning').length;
+  const sla=parcels.length?Math.round(parcels.filter(p=>cls(p.days)==='ok').length/parcels.length*100):0;
+  const msg=`تقرير ${CFG.company} — ${new Date().toLocaleDateString('ar-LY')}\n\n📦 إجمالي: ${parcels.length}\n🔴 حرج: ${crit}\n🟡 تحذير: ${warn}\n✅ SLA: ${sla}%\n👤 تواصل: ${contacted.size}`;
+  openWAUrl(normPhone(CFG.mgrPhone||''),msg);
+}
+
+// ══════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════
+async function saveSettings(){
+  CFG.critDays=parseInt(document.getElementById('s-crit').value)||15;
+  CFG.warnDays=parseInt(document.getElementById('s-warn').value)||7;
+  CFG.discount=parseFloat(document.getElementById('s-disc').value)||50;
+  CFG.company=document.getElementById('s-company').value||'النورس';
+  CFG.mgrPhone=document.getElementById('s-mphone').value||'';
+  const settings=[
+    {key:'critDays',value:String(CFG.critDays)},{key:'warnDays',value:String(CFG.warnDays)},
+    {key:'discount',value:String(CFG.discount)},{key:'company',value:CFG.company},{key:'mgrPhone',value:CFG.mgrPhone},
+  ];
+  try{ await sbUpsert('settings',settings); toast('تم حفظ الإعدادات','s'); }
+  catch(e){ toast('خطأ: '+e.message,'e'); }
+}
+async function saveTpls(){
+  try{
+    WA_TEMPLATES.forEach((t,i)=>{
+      const nb=document.getElementById('tb-body-'+i);
+      const nn=document.getElementById('tb-name-'+i);
+      if(nb)t.body=nb.value;if(nn)t.name=nn.value;
+    });
+    await sb('wa_templates','DELETE',null,'?id=neq.-1');
+    await sbUpsert('wa_templates',WA_TEMPLATES.map(t=>({id:t.id,name:t.name,tag:t.tag,body:t.body})));
+    toast('تم حفظ القوالب','s');renderWA();
+  }catch(e){toast('خطأ: '+e.message,'e');}
+}
+function addTpl(){
+  WA_TEMPLATES.push({id:'tpl-'+Date.now(),name:'قالب جديد',tag:'عام',body:'السلام عليكم {اسم}\n'});
+  renderTplEditor();
+}
+function renderTplEditor(){
+  document.getElementById('tpl-editor').innerHTML=WA_TEMPLATES.map((t,i)=>`
+    <div style="background:var(--bg4);border:1px solid var(--rim);border-radius:var(--r2);padding:12px;margin-bottom:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div><label class="fl">الاسم</label><input class="fi" id="tb-name-${i}" value="${t.name}"></div>
+        <div><label class="fl">التصنيف</label><input class="fi" value="${t.tag}"></div>
+      </div>
+      <label class="fl">نص الرسالة</label>
+      <textarea class="fi" id="tb-body-${i}" rows="3">${t.body}</textarea>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// DB STATS
+// ══════════════════════════════════════════
+async function loadDbStats(){
+  try {
+    const [p,c,b,ct]=await Promise.all([sbCount('parcels'),sbCount('couriers'),sbCount('branches'),sbCount('contacted')]);
+    document.getElementById('db-parcels').textContent=p;
+    document.getElementById('db-couriers').textContent=c;
+    document.getElementById('db-branches').textContent=b;
+    document.getElementById('db-contacted').textContent=ct;
+  }catch(e){console.warn('stats fail',e);}
+}
+
+async function clearTodayParcels(){
+  if(!confirm('مسح طرود اليوم من قاعدة البيانات؟'))return;
+  const today=new Date().toISOString().split('T')[0];
+  try{
+    await sb('parcels','DELETE',null,'?upload_date=eq.'+today);
+    toast('تم مسح طرود اليوم','w');
+    await loadParcels(); loadDbStats();
+  }catch(e){toast('خطأ: '+e.message,'e');}
+}
+
+// ══════════════════════════════════════════
+// MODAL / TOAST / CLOCK
+// ══════════════════════════════════════════
+function closeM(id){document.getElementById(id)?.classList.remove('on');}
+document.addEventListener('click',e=>{if(e.target.classList.contains('overlay'))e.target.classList.remove('on');});
+
+function toast(msg,type='i'){
+  const ico={s:'✅',e:'🚨',w:'⚠️',i:'ℹ️'};
+  const d=document.createElement('div');d.className=`toast ${type}`;
+  d.innerHTML=`<span>${ico[type]}</span><span>${msg}</span>`;
+  document.getElementById('toasts').appendChild(d);
+  setTimeout(()=>d.remove(),3400);
+}
+
+function startClock(){
+  const tick=()=>{
+    document.getElementById('clock').textContent=new Date().toLocaleTimeString('ar-LY');
+    const h=new Date().getHours();
+    const gr=h<12?'صباح الخير':h<17?'مساء الخير':'مساء النور';
+    document.getElementById('greeting').textContent=gr+' 👋';
+  };
+  tick(); setInterval(tick,1000);
+}
+
+// ══════════════════════════════════════════
+// INIT — Check DB tables exist, then show login
+// ══════════════════════════════════════════
+async function init(){
+  // Check if opened as file:// - won't work for API calls
+  if (location.protocol === 'file:') {
+    document.getElementById('loading-msg').innerHTML=`
+      <div style="color:var(--gold);font-size:13px;font-weight:700;margin-bottom:10px">⚠️ افتح التطبيق من خادم ويب</div>
+      <div style="color:var(--mute);font-size:11px;max-width:320px;text-align:center;line-height:1.9;margin-bottom:14px">
+        هذا التطبيق لا يعمل بفتح الملف مباشرة.<br>
+        يجب فتحه من رابط إنترنت.
+      </div>
+      <div style="background:var(--bg4);border:1px solid var(--rim2);border-radius:var(--r2);padding:12px;text-align:right;margin-bottom:12px">
+        <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px">🔗 رابط التطبيق الأونلاين:</div>
+        <a href="https://melodious-madeleine-c21065.netlify.app" target="_blank"
+           style="color:var(--blu);font-size:12px;font-family:var(--mono);word-break:break-all;text-decoration:none">
+          melodious-madeleine-c21065.netlify.app
+        </a>
+      </div>
+      <button onclick="window.open('https://melodious-madeleine-c21065.netlify.app','_blank')" class="btn btn-gold">
+        🚀 فتح التطبيق
+      </button>`;
+    return;
+  }
+  document.getElementById('loading-msg').textContent='التحقق من قاعدة البيانات...';
+
+  // Check if tables exist by trying a simple query
+  try {
+    document.getElementById('loading-msg').textContent = 'جارٍ الاتصال بـ Supabase...';
+    const result = await sb('settings','GET',null,'?select=key&limit=1');
+    // Tables exist — check session
+    document.getElementById('loading').classList.add('hide');
+    const saved=sessionStorage.getItem('nawras_user');
+    if(saved){CU=JSON.parse(saved);startApp();}
+    else{document.getElementById('login-screen').style.display='flex';}
+  } catch(e) {
+    console.error('Init error:', e);
+    const msg = e.message || '';
+    if (msg.includes('relation') || msg.includes('does not exist') || msg.includes('42P01')) {
+      // Tables don't exist
+      document.getElementById('loading-msg').innerHTML=`
+        <div style="color:var(--red);margin-bottom:12px">⚠️ قاعدة البيانات تحتاج إعداد</div>
+        <button onclick="showSQL()" class="btn btn-gold" style="margin-top:12px">📋 عرض كود الإعداد</button>`;
+    } else if (msg.includes('تعذّر') || msg.includes('fetch') || msg.includes('NetworkError')) {
+      document.getElementById('loading-msg').innerHTML=`
+        <div style="color:var(--red);margin-bottom:10px">❌ لا يوجد اتصال بالإنترنت</div>
+        <div style="color:var(--mute);font-size:12px">تأكد من الاتصال ثم أعد تحميل الصفحة</div>
+        <button onclick="location.reload()" class="btn btn-gold" style="margin-top:12px">↻ إعادة المحاولة</button>`;
+    } else {
+      // Unknown error — still try to show login
+      console.warn('Showing login despite error:', msg);
+      document.getElementById('loading').classList.add('hide');
+      const saved=sessionStorage.getItem('nawras_user');
+      if(saved){CU=JSON.parse(saved);startApp();}
+      else{document.getElementById('login-screen').style.display='flex';}
+    }
+  }
+}
+
+function showSQL(){
+  const sql=`-- شغّل هذا الكود في Supabase SQL Editor
+create table if not exists couriers(id text primary key,name text,phone text,phone2 text,branch text,area text,city text,title text,status text default 'نشط',created_at timestamptz default now());
+create table if not exists branches(id serial primary key,name text,area text,city text,manager text,phone text,type text,created_at timestamptz default now());
+create table if not exists areas(id serial primary key,name text,code text,supervisor text,phone text,created_at timestamptz default now());
+create table if not exists parcels(id text primary key,client text,phone text,courier text,courier_phone text,area text,branch text,days numeric default 0,status text,upload_date date default current_date,created_at timestamptz default now());
+create table if not exists contacted(parcel_id text primary key,contacted_at timestamptz default now());
+create table if not exists interventions(id serial primary key,type text,details text,parcel_id text,created_at timestamptz default now());
+create table if not exists wa_templates(id text primary key,name text,tag text,body text,created_at timestamptz default now());
+create table if not exists settings(key text primary key,value text);
+alter table couriers enable row level security;
+alter table branches enable row level security;
+alter table areas enable row level security;
+alter table parcels enable row level security;
+alter table contacted enable row level security;
+alter table interventions enable row level security;
+alter table wa_templates enable row level security;
+alter table settings enable row level security;
+create policy "allow all" on couriers for all using (true) with check (true);
+create policy "allow all" on branches for all using (true) with check (true);
+create policy "allow all" on areas for all using (true) with check (true);
+create policy "allow all" on parcels for all using (true) with check (true);
+create policy "allow all" on contacted for all using (true) with check (true);
+create policy "allow all" on interventions for all using (true) with check (true);
+create policy "allow all" on wa_templates for all using (true) with check (true);
+create policy "allow all" on settings for all using (true) with check (true);`;
+
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  d.innerHTML=`<div style="background:var(--bg3);border:1px solid var(--rim2);border-radius:14px;max-width:700px;width:100%;max-height:85vh;overflow:auto">
+    <div style="padding:18px 22px;border-bottom:1px solid var(--rim);display:flex;justify-content:space-between;align-items:center">
+      <strong>كود إعداد قاعدة البيانات</strong>
+      <button onclick="this.closest('div[style]').remove()" style="background:none;border:none;color:var(--mute);font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:20px">
+      <p style="font-size:12px;color:var(--mute);margin-bottom:12px">روح لـ Supabase → SQL Editor → انسخ هذا الكود وشغّله، ثم ارجع وأعد تحميل الصفحة</p>
+      <textarea style="width:100%;height:300px;background:var(--bg);border:1px solid var(--rim);border-radius:var(--r2);color:var(--grn);font-family:var(--mono);font-size:11px;padding:12px;resize:none" readonly>${sql}</textarea>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-gold" onclick="navigator.clipboard.writeText(document.querySelector('textarea').value).then(()=>alert('تم النسخ!'))">📋 نسخ</button>
+        <a href="https://supabase.com/dashboard" target="_blank" class="btn btn-ghost" style="text-decoration:none">🔗 فتح Supabase</a>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+}
+
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
